@@ -1,4 +1,5 @@
 
+import time
 
 # Funcția de inițializare
 def initialize(input_state):
@@ -56,6 +57,10 @@ print('Starea inițială:')
 print(state)
 print('Celula goală inițială:')
 print(empty_cell)
-solution = iddfs(state, empty_cell, 10, [empty_cell])
+end_time= time.time()
+solution = iddfs(state, empty_cell, 50, [empty_cell])
+execution_time = time.time() - end_time
 print('Soluția:')
 print(solution)
+print('Timpul de execuție:')
+print(execution_time)

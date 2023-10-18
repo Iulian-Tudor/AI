@@ -1,82 +1,86 @@
 import time
 
-# Funcția de inițializare
-def initialize(input_state):
-    state = [[0] * 3 for _ in range(3)]
-    empty_cell = None
+# Inițializează puzzle-ul
+def inițializează_puzzle(stare_inițială):
+    puzzle = [[0] * 3 for _ in range(3)]
+    celulă_goală = None
     for i in range(3):
         for j in range(3):
-            state[i][j] = input_state[i * 3 + j]
-            if input_state[i * 3 + j] == 0:
-                empty_cell = (i, j)
-    return state, empty_cell
+            puzzle[i][j] = stare_inițială[i * 3 + j]
+            if stare_inițială[i * 3 + j] == 0:
+                celulă_goală = (i, j)
+    return puzzle, celulă_goală
 
-# Funcția de verificare a stării finale
-def is_final(state):
+# Verifică dacă este starea finală
+def este_starea_finală(puzzle):
     for i in range(3):
         for j in range(3):
-            if state[i][j] != i * 3 + j + 1 and state[i][j] != 0:
+            if puzzle[i][j] != i * 3 + j + 1 and puzzle[i][j] != 0:
                 return False
     return True
 
-# Funcțiile de tranziție
-last_empty_cell = None
+# Funcție pentru mutare
+ultima_celulă_goală = None  # Variabilă globală pentru a evita mutarea inversă
 
-# Funcția de tranziție
-def move(state, empty_cell, direction):
-    global last_empty_cell
-    x, y = empty_cell
-    if direction == 'up' and x > 0 and (x - 1, y) != last_empty_cell:
-        state[x][y], state[x - 1][y] = state[x - 1][y], state[x][y]
-        last_empty_cell = (x, y)
-        return state, (x - 1, y)
-    elif direction == 'down' and x < 2 and (x + 1, y) != last_empty_cell:
-        state[x][y], state[x + 1][y] = state[x + 1][y], state[x][y]
-        last_empty_cell = (x, y)
-        return state, (x + 1, y)
-    elif direction == 'left' and y > 0 and (x, y - 1) != last_empty_cell:
-        state[x][y], state[x][y - 1] = state[x][y - 1], state[x][y]
-        last_empty_cell = (x, y)
-        return state, (x, y - 1)
-    elif direction == 'right' and y < 2 and (x, y + 1) != last_empty_cell:
-        state[x][y], state[x][y + 1] = state[x][y + 1], state[x][y]
-        last_empty_cell = (x, y)
-        return state, (x, y + 1)
-    return None, empty_cell
+def mutare(puzzle, celulă_goală, direcție):
+    global ultima_celulă_goală
+    x, y = celulă_goală
 
-# Funcția de căutare IDDFS
-def iddfs(state, empty_cell, depth):
-    if is_final(state):
-        return state
-    if depth == 0:
+    if direcție == 'sus' and x > 0 and (x - 1, y) != ultima_celulă_goală:
+        puzzle[x][y], puzzle[x - 1][y] = puzzle[x - 1][y], puzzle[x][y]
+        ultima_celulă_goală = (x, y)
+        return puzzle, (x - 1, y)
+
+    elif direcție == 'jos' and x < 2 and (x + 1, y) != ultima_celulă_goală:
+        puzzle[x][y], puzzle[x + 1][y] = puzzle[x + 1][y], puzzle[x][y]
+        ultima_celulă_goală = (x, y)
+        return puzzle, (x + 1, y)
+
+    elif direcție == 'stânga' and y > 0 and (x, y - 1) != ultima_celulă_goală:
+        puzzle[x][y], puzzle[x][y - 1] = puzzle[x][y - 1], puzzle[x][y]
+        ultima_celulă_goală = (x, y)
+        return puzzle, (x, y - 1)
+
+    elif direcție == 'dreapta' and y < 2 and (x, y + 1) != ultima_celulă_goală:
+        puzzle[x][y], puzzle[x][y + 1] = puzzle[x][y + 1], puzzle[x][y]
+        ultima_celulă_goală = (x, y)
+        return puzzle, (x, y + 1)
+
+    return None, celulă_goală
+
+# Funcție pentru căutare IDDFS
+def căutare_iddfs(puzzle, celulă_goală, adâncime):
+    if este_starea_finală(puzzle):
+        return puzzle
+    if adâncime == 0:
         return None
-    for direction in ['up', 'down', 'left', 'right']:
-        next_state, next_empty_cell = move(state, empty_cell, direction)
-        if next_state is not None:
-            result = iddfs(next_state, next_empty_cell, depth - 1)
-            if result is not None:
-                return result
+    for direcție in ['sus', 'jos', 'stânga', 'dreapta']:
+        următorul_puzzle, următoarea_celulă_goală = mutare(puzzle, celulă_goală, direcție)
+        if următorul_puzzle is not None:
+            rezultat = căutare_iddfs(următorul_puzzle, următoarea_celulă_goală, adâncime - 1)
+            if rezultat is not None:
+                return rezultat
     return None
 
 def main():
-    input_state = [8, 6, 3, 2, 5, 4, 0, 7, 1]
-    state, empty_cell = initialize(input_state)
-    print('Starea inițială:')
-    for row in state:
-        print(row)
-    print('Celula goală inițială:')
-    print(empty_cell)
-    start_time = time.time()
-    solution = iddfs(state, empty_cell, 30)  # Limita la adancime sa nu ruleze la infinit fara sa-mi dau seama
-    execution_time = time.time() - start_time
+    stare_inițială = [8, 6, 3, 2, 5, 4, 0, 7, 1]
+    puzzle, celulă_goală = inițializează_puzzle(stare_inițială)
+    print('Starea Inițială a Puzzle-ului:')
+    for rând in puzzle:
+        print(rând)
+    print('Celula Goală Inițială:')
+    print(celulă_goală)
+    moment_de_start = time.time()
+    soluție = căutare_iddfs(puzzle, celulă_goală, 30)  # Limita adâncimii pentru a evita execuția infinită
+    timp_de_execuție = time.time() - moment_de_start
     print('Soluția:')
-    if solution is not None:
-        for row in solution:
-            print(row)
+    if soluție is not None:
+        for rând in soluție:
+            print(rând)
     else:
         print('Nu există soluție.')
-    print('Timpul de execuție:')
-    print(execution_time)
+    print('Timpul de Execuție:')
+    print(timp_de_execuție)
 
-
-main()
+if __name__ == '__main__':
+    main()

@@ -26,8 +26,12 @@ def este_starea_finala(puzzle):
     if puzzle_flattened[-1] == 0 and puzzle_flattened[:-1] == sorted(puzzle_flattened[:-1]):
         return True
 
-    return False
+    # take 0 out of the list and check if it's sorted (the rest of the list)
+    puzzle_without_0 = [i for i in puzzle_flattened if i != 0]
+    if puzzle_without_0 == sorted(puzzle_without_0):
+        return True
 
+    return False
 
 
 # Functie pentru mutare
@@ -45,7 +49,7 @@ def move(puzzle, empty_cell, direction):
     global last_empty_cell
     x, y = empty_cell
 
-    # Map directions to their logic
+    # Dictionar
     directions = {
         'sus': ((x > 0, (x - 1, y))),
         'jos': ((x < 2, (x + 1, y))),
@@ -79,12 +83,12 @@ def cautare_iddfs(puzzle, empty_cell, depth):
 
 def main():
     lst = []
-    for i in range(0, 9):           # Citire de instanta de la tastatura
-        element = int(input())
-        lst.append(element)
+    #for i in range(0, 9):     # Citire de instanta de la tastatura
+    #    element = int(input())
+    #    lst.append(element)
 
-    # stare_initiala = [8, 6, 3, 2, 5, 4, 0, 7, 1]
-    puzzle, empty_cell = initializeaza_puzzle(lst)
+    stare_initiala = [8, 6, 3, 2, 5, 4, 0, 7, 1]
+    puzzle, empty_cell = initializeaza_puzzle(stare_initiala)
     print('Starea Initiala a Puzzle-ului:')
     for i in puzzle:
         print(i)

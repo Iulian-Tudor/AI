@@ -34,6 +34,44 @@ def este_starea_finala(puzzle):
     return False
 
 
+def manhattan_distance(puzzle):
+    distance = 0
+    for i in range(3):
+        for j in range(3):
+            if puzzle[i][j] != 0:
+                goal_i = (puzzle[i][j] - 1) // 3
+                goal_j = (puzzle[i][j] - 1) % 3
+                distance += abs(i - goal_i) + abs(j - goal_j)
+    return distance
+
+
+def hamming_distance(puzzle):
+    distance = 0
+    for i in range(3):
+        for j in range(3):
+            if puzzle[i][j] != 0 and puzzle[i][j] != (i * 3 + j + 1):
+                distance += 1
+    return distance
+
+
+def linear_conflict(puzzle):
+    distance = 0
+    for i in range(3):
+        for j in range(3):
+            if puzzle[i][j] != 0:
+                goal_i = (puzzle[i][j] - 1) // 3
+                goal_j = (puzzle[i][j] - 1) % 3
+                if i < goal_i:
+                    distance += sum(1 for k in range(i + 1, goal_i + 1) if puzzle[k][j] != 0)
+                elif i > goal_i:
+                    distance += sum(1 for k in range(goal_i, i) if puzzle[k][j] != 0)
+                if j < goal_j:
+                    distance += sum(1 for k in range(j + 1, goal_j + 1) if puzzle[i][k] != 0)
+                elif j > goal_j:
+                    distance += sum(1 for k in range(goal_j, j) if puzzle[i][k] != 0)
+    return distance
+
+
 # Functie pentru mutare
 last_empty_cell = None  # Variabila globala pentru a evita mutarea inversa
 
@@ -67,47 +105,66 @@ def move(puzzle, empty_cell, direction):
 
 
 # Functie pentru cautare IDDFS
-def cautare_iddfs(puzzle, empty_cell, depth):
+def iddfs(puzzle, empty_cell, depth, steps=0):
     if este_starea_finala(puzzle):
-        return puzzle
+        return puzzle, steps
     if depth == 0:
-        return None
+        return None, steps
     for directie in ['sus', 'jos', 'stanga', 'dreapta']:
         next_puzzle, next_empty_cell = move(puzzle, empty_cell, directie)
         if next_puzzle is not None:
-            rezultat = cautare_iddfs(next_puzzle, next_empty_cell, depth - 1)
-            if rezultat is not None:
-                return rezultat
-    return None
+            solutie, steps = iddfs(next_puzzle, next_empty_cell, depth - 1, steps + 1)
+            if solutie is not None:
+                return solutie, steps
+    return None, steps
+
+def greedy(puzzle, empty_cell, depth, heuristic, steps=0):
+    if este_starea_finala(puzzle):
+        return puzzle, steps
+    if depth == 0:
+        return None, steps
+    min_distance = float('inf')
+    best_move = None
+    for directie in ['sus', 'jos', 'stanga', 'dreapta']:
+        next_puzzle, next_empty_cell = move(puzzle, empty_cell, directie)
+        if next_puzzle is not None:
+            distance = heuristic(next_puzzle)
+            if distance < min_distance:
+                min_distance = distance
+                best_move = directie
+    if best_move is not None:
+        next_puzzle, next_empty_cell = move(puzzle, empty_cell, best_move)
+        return greedy(next_puzzle, next_empty_cell, depth - 1, heuristic, steps + 1)
+    else:
+        return greedy(puzzle, empty_cell, depth - 1, heuristic, steps + 1)
+
 
 
 def main():
-    lst = []
-    #for i in range(0, 9):     # Citire de instanta de la tastatura
-    #    element = int(input())
-    #    lst.append(element)
+    stare_iniciala = [[8, 6, 7, 2, 5, 4, 0, 3, 1], [2, 5, 3, 1, 0, 6, 4, 7, 8], [2, 7, 5, 0, 8, 4, 3, 1, 6]]
 
-    stare_initiala = [8, 6, 3, 2, 5, 4, 0, 7, 1]
-    puzzle, empty_cell = initializeaza_puzzle(stare_initiala)
-    print('Starea Initiala a Puzzle-ului:')
-    for i in puzzle:
-        print(i)
+    strategies = ['IDDFS', 'Greedy Manhattan', 'Greedy Hamming', 'Greedy Linear Conflict']
+    heuristics = [None, manhattan_distance, hamming_distance, linear_conflict]
 
-    print('Celula Goala Initiala:')
-    print(empty_cell)
-    moment_de_start = time.time()
-    solutie = cautare_iddfs(puzzle, empty_cell, 30)  # Limita adancimii pentru a evita executia infinita
-    timp_de_executie = time.time() - moment_de_start
+    for stare in stare_iniciala:
+        puzzle, empty_cell = initializeaza_puzzle(stare)
+        for strategy, heuristic in zip(strategies, heuristics):
+            print(f'Running {strategy} with starting position {stare}...')
+            moment_de_start = time.time()
+            if strategy == 'IDDFS':
+                solutie, steps = iddfs(puzzle, empty_cell, 30)
+            else:
+                solutie, steps = greedy(puzzle, empty_cell, 30, heuristic)
+            timp_de_executie = time.time() - moment_de_start
 
-    print('Solutia:')
-    if solutie is not None:
-        for i in solutie:
-            print(i)
-    else:
-        print('Nu exista solutie.')
-    print('Timpul de Executie:')
-    print(timp_de_executie)
-
+            if solutie is not None:
+                print('Solutia:')
+                for i in solutie:
+                    print(i)
+                print('Lungimea solutiei:', steps)
+            else:
+                print('Nu exista solutie.')
+            print('Timpul de Executie:', timp_de_executie)
 
 if __name__ == '__main__':
     main()

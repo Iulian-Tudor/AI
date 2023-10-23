@@ -2,6 +2,7 @@ import time
 from copy import deepcopy
 from queue import PriorityQueue
 
+
 # Inițializează puzzle-ul
 def initializeaza_puzzle(stare_initiala):
     puzzle = [[0] * 3 for _ in range(3)]
@@ -166,9 +167,6 @@ def a_star(puzzle, empty_cell, heuristic, steps=0):
 
 
     return None, steps
-
-
-
 
 
 def main():

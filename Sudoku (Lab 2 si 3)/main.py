@@ -146,6 +146,29 @@ def greedy_best_first(puzzle, empty_cell, heuristic, steps=0):
     return None, steps
 
 
+def a_star(puzzle, empty_cell, heuristic, steps=0):
+    # Use a priority queue to store the nodes to visit, with f(n) as the priority
+    queue = PriorityQueue()
+    queue.put((0, steps, puzzle, empty_cell))
+
+    while not queue.empty():
+        _, steps, puzzle, empty_cell = queue.get()
+
+        if este_starea_finala(puzzle):
+            return puzzle, steps
+
+        for directie in ['sus', 'jos', 'stanga', 'dreapta']:
+            next_puzzle, next_empty_cell = move(puzzle, empty_cell, directie)
+            if next_puzzle is not None:
+                g = steps + 1  # The cost function g(n) is the number of steps taken so far
+                h = heuristic(next_puzzle)  # The heuristic function h(n) is given
+                f = g + h  # The priority f(n) = g(n) + h(n)
+                queue.put((f, g, next_puzzle, next_empty_cell))
+
+    # No solution found
+    return None, steps
+
+
 
 
 

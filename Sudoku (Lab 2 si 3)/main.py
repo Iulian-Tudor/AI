@@ -147,7 +147,6 @@ def greedy_best_first(puzzle, empty_cell, heuristic, steps=0):
 
 
 def a_star(puzzle, empty_cell, heuristic, steps=0):
-    # Use a priority queue to store the nodes to visit, with f(n) as the priority
     queue = PriorityQueue()
     queue.put((0, steps, puzzle, empty_cell))
 
@@ -160,12 +159,12 @@ def a_star(puzzle, empty_cell, heuristic, steps=0):
         for directie in ['sus', 'jos', 'stanga', 'dreapta']:
             next_puzzle, next_empty_cell = move(puzzle, empty_cell, directie)
             if next_puzzle is not None:
-                g = steps + 1  # The cost function g(n) is the number of steps taken so far
-                h = heuristic(next_puzzle)  # The heuristic function h(n) is given
-                f = g + h  # The priority f(n) = g(n) + h(n)
+                g = steps + 1
+                h = heuristic(next_puzzle)
+                f = g + h
                 queue.put((f, g, next_puzzle, next_empty_cell))
 
-    # No solution found
+
     return None, steps
 
 
@@ -197,6 +196,21 @@ def main():
             else:
                 print('Nu exista solutie.')
             print('Timpul de Executie:', timp_de_executie)
+
+        puzzle, empty_cell = initializeaza_puzzle(stare)
+        moment_de_start = time.time()
+        bonus_solutie, steps = a_star(deepcopy(puzzle), empty_cell, manhattan_distance)
+        timp_de_executie = time.time() - moment_de_start
+        print('Running A* with starting position', stare, '...')
+        if bonus_solutie is not None:
+            print('Solutia:')
+            for i in bonus_solutie:
+                print(i)
+            print('Lungimea solutiei:', steps)
+        else:
+            print('Nu exista solutie.')
+        print('Timpul de Executie:', timp_de_executie)
+
 
 if __name__ == '__main__':
     main()

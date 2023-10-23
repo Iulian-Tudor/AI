@@ -1,5 +1,6 @@
 import time
-
+from copy import deepcopy
+from queue import PriorityQueue
 
 # Inițializează puzzle-ul
 def initializeaza_puzzle(stare_initiala):
@@ -118,25 +119,33 @@ def iddfs(puzzle, empty_cell, depth, steps=0):
                 return solutie, steps
     return None, steps
 
-def greedy(puzzle, empty_cell, depth, heuristic, steps=0):
-    if este_starea_finala(puzzle):
-        return puzzle, steps
-    if depth == 0:
-        return None, steps
-    min_distance = float('inf')
-    best_move = None
-    for directie in ['sus', 'jos', 'stanga', 'dreapta']:
-        next_puzzle, next_empty_cell = move(puzzle, empty_cell, directie)
-        if next_puzzle is not None:
-            distance = heuristic(next_puzzle)
-            if distance < min_distance:
-                min_distance = distance
-                best_move = directie
-    if best_move is not None:
-        next_puzzle, next_empty_cell = move(puzzle, empty_cell, best_move)
-        return greedy(next_puzzle, next_empty_cell, depth - 1, heuristic, steps + 1)
-    else:
-        return greedy(puzzle, empty_cell, depth - 1, heuristic, steps + 1)
+def greedy_best_first(puzzle, empty_cell, heuristic, steps=0):
+
+    queue = PriorityQueue()
+    queue.put((heuristic(puzzle), steps, puzzle, empty_cell))
+
+    visited_states = set()
+
+    while not queue.empty():
+        _, steps, puzzle, empty_cell = queue.get()
+        state = tuple(map(tuple, puzzle))
+
+        if state in visited_states:
+            continue
+        visited_states.add(state)
+
+        if este_starea_finala(puzzle):
+            return puzzle, steps
+
+        for directie in ['sus', 'jos', 'stanga', 'dreapta']:
+            next_puzzle, next_empty_cell = move(deepcopy(puzzle), empty_cell, directie)
+            if next_puzzle is not None:
+                h = heuristic(next_puzzle)
+                queue.put((h, steps + 1, next_puzzle, next_empty_cell))
+
+    return None, steps
+
+
 
 
 
@@ -152,9 +161,9 @@ def main():
             print(f'Running {strategy} with starting position {stare}...')
             moment_de_start = time.time()
             if strategy == 'IDDFS':
-                solutie, steps = iddfs(puzzle, empty_cell, 30)
+                solutie, steps = iddfs(deepcopy(puzzle), empty_cell, 30)
             else:
-                solutie, steps = greedy(puzzle, empty_cell, 30, heuristic)
+                solutie, steps = greedy_best_first(deepcopy(puzzle), empty_cell, heuristic)
             timp_de_executie = time.time() - moment_de_start
 
             if solutie is not None:

@@ -172,12 +172,12 @@ def a_star(puzzle, empty_cell, heuristic, steps=0):
 
 
 def main():
-    stare_iniciala = [[8, 6, 7, 2, 5, 4, 0, 3, 1], [2, 5, 3, 1, 0, 6, 4, 7, 8], [2, 7, 5, 0, 8, 4, 3, 1, 6]]
+    stare_initiala = [[8, 6, 7, 2, 5, 4, 0, 3, 1], [2, 5, 3, 1, 0, 6, 4, 7, 8], [2, 7, 5, 0, 8, 4, 3, 1, 6]]
 
     strategies = ['IDDFS', 'Greedy Manhattan', 'Greedy Hamming', 'Greedy Linear Conflict']
     heuristics = [None, manhattan_distance, hamming_distance, linear_conflict]
 
-    for stare in stare_iniciala:
+    for stare in stare_initiala:
         puzzle, empty_cell = initializeaza_puzzle(stare)
         for strategy, heuristic in zip(strategies, heuristics):
             print(f'Running {strategy} with starting position {stare}...')

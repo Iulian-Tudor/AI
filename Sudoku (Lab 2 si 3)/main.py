@@ -28,7 +28,7 @@ def este_starea_finala(puzzle):
     if puzzle_flattened[-1] == 0 and puzzle_flattened[:-1] == sorted(puzzle_flattened[:-1]):
         return True
 
-    # take 0 out of the list and check if it's sorted (the rest of the list)
+    # Este 0 oriunde si lista sortata?
     puzzle_without_0 = [i for i in puzzle_flattened if i != 0]
     if puzzle_without_0 == sorted(puzzle_without_0):
         return True
@@ -37,14 +37,21 @@ def este_starea_finala(puzzle):
 
 
 def manhattan_distance(puzzle):
-    distance = 0
-    for i in range(3):
-        for j in range(3):
-            if puzzle[i][j] != 0:
-                goal_i = (puzzle[i][j] - 1) // 3
-                goal_j = (puzzle[i][j] - 1) % 3
-                distance += abs(i - goal_i) + abs(j - goal_j)
-    return distance
+    distances = []
+    for empty_cell in range(9):
+        distance = 0
+        for i in range(3):
+            for j in range(3):
+                if puzzle[i][j] != 0:
+                    goal_i = (puzzle[i][j] - 1) // 3
+                    goal_j = (puzzle[i][j] - 1) % 3
+                    if puzzle[i][j] == 0:
+                        goal_i = empty_cell // 3
+                        goal_j = empty_cell % 3
+                    distance += abs(i - goal_i) + abs(j - goal_j)
+        distances.append(distance)
+    return sum(distances) / len(distances)
+
 
 
 def hamming_distance(puzzle):
@@ -120,7 +127,8 @@ def iddfs(puzzle, empty_cell, depth, steps=0):
                 return solutie, steps
     return None, steps
 
-def greedy_best_first(puzzle, empty_cell, heuristic, steps=0):
+
+def greedy_best_first(puzzle, empty_cell, heuristic, steps=0): # Greedy
 
     queue = PriorityQueue()
     queue.put((heuristic(puzzle), steps, puzzle, empty_cell))
@@ -129,7 +137,7 @@ def greedy_best_first(puzzle, empty_cell, heuristic, steps=0):
 
     while not queue.empty():
         _, steps, puzzle, empty_cell = queue.get()
-        state = tuple(map(tuple, puzzle))
+        state = tuple(map(tuple, puzzle))  # Transforma lista de liste in tuple de tuple (imutable)
 
         if state in visited_states:
             continue
@@ -147,7 +155,7 @@ def greedy_best_first(puzzle, empty_cell, heuristic, steps=0):
     return None, steps
 
 
-def a_star(puzzle, empty_cell, heuristic, steps=0):
+def a_star(puzzle, empty_cell, heuristic, steps=0): # Bonus
     queue = PriorityQueue()
     queue.put((0, steps, puzzle, empty_cell))
 
@@ -165,7 +173,6 @@ def a_star(puzzle, empty_cell, heuristic, steps=0):
                 f = g + h
                 queue.put((f, g, next_puzzle, next_empty_cell))
 
-
     return None, steps
 
 
@@ -181,7 +188,7 @@ def main():
             print(f'Running {strategy} with starting position {stare}...')
             moment_de_start = time.time()
             if strategy == 'IDDFS':
-                solutie, steps = iddfs(deepcopy(puzzle), empty_cell, 30)
+                solutie, steps = iddfs(deepcopy(puzzle), empty_cell, 500)
             else:
                 solutie, steps = greedy_best_first(deepcopy(puzzle), empty_cell, heuristic)
             timp_de_executie = time.time() - moment_de_start

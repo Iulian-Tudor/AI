@@ -1,4 +1,5 @@
 import copy
+import timeit
 
 
 def get_empty_cells(board):
@@ -28,6 +29,7 @@ def check_values(board, values, row, col):
                 values.remove(board[i][j])
     return values
 
+
 def get_possible_values(board, row, col):
     values = set(range(1, 10))
     return check_values(board, values, row, col)
@@ -52,7 +54,26 @@ def mrv(empty_cells, domain):
             min_values = len(values)
     return min_cell
 
-def solve(board, empty_cells, domain):
+
+def solve_without_MRV(board, empty_cells, domain):
+    if not empty_cells:
+        return board
+    cell = empty_cells[0]  # Select the first empty cell
+    values = domain[cell]
+    for value in values:
+        new_board = copy.deepcopy(board)
+        new_board[cell[0]][cell[1]] = value
+        new_empty_cells = empty_cells.copy()
+        new_empty_cells.remove(cell)
+        new_domain = forward_checking(new_board, new_empty_cells, domain)
+        if all(len(new_domain[cell]) > 0 for cell in new_empty_cells):
+            result = solve_without_MRV(new_board, new_empty_cells, new_domain)
+            if result:
+                return result
+    return False
+
+
+def solve_with_MRV(board, empty_cells, domain):
     if not empty_cells:
         return board
     cell = mrv(empty_cells, domain)
@@ -64,13 +85,13 @@ def solve(board, empty_cells, domain):
         new_empty_cells.remove(cell)
         new_domain = forward_checking(new_board, new_empty_cells, domain)
         if all(len(new_domain[cell]) > 0 for cell in new_empty_cells):
-            result = solve(new_board, new_empty_cells, new_domain)
+            result = solve_with_MRV(new_board, new_empty_cells, new_domain)
             if result:
                 return result
-    return None
+    return False
 
 
-def sudoku_solver(board):
+def sudoku_solver(board, solver):
     # Initialize domain for each empty cell
     empty_cells = get_empty_cells(board)
     domain = {}
@@ -78,7 +99,7 @@ def sudoku_solver(board):
         domain[cell] = get_possible_values(board, cell[0], cell[1])
 
     # Solve the board
-    solved_board = solve(board, empty_cells, domain)
+    solved_board = solver(board, empty_cells, domain)
 
     return solved_board
 
@@ -97,12 +118,27 @@ def main():
         [0, 0, 0, 0, 8, 0, 0, 7, 9]
     ]
 
-    # Solve the Sudoku board
-    solved_board = sudoku_solver(board)
+    # Solve the Sudoku board with MRV
+    start_time = timeit.default_timer()
+    solved_board_with_MRV = sudoku_solver(board, solve_with_MRV)
+    end_time = timeit.default_timer()
+    print("Time taken to solve with MRV: ", end_time - start_time, "seconds")
+    if solved_board_with_MRV:
+        for row in solved_board_with_MRV:
+            print(row)
+    else:
+        print("No solution found")
 
-    # Print the solved Sudoku board
-    for row in solved_board:
-        print(row)
+    print("\n")
+
+    # Solve the Sudoku board without MRV
+    start_time = timeit.default_timer()
+    solved_board_without_MRV = sudoku_solver(board, solve_without_MRV)
+    end_time = timeit.default_timer()
+    print("Time taken to solve without MRV: ", end_time - start_time, "seconds")
+    if solved_board_without_MRV:
+        for row in solved_board_without_MRV:
+            print(row)
 
 
 if __name__ == "__main__":

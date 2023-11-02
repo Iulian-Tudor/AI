@@ -30,8 +30,10 @@ def check_values(board, values, row, col):
     return values
 
 
-def get_possible_values(board, row, col):
+def get_possible_values(board, row, col, even_cells):
     values = set(range(1, 10))
+    if row and col in even_cells:
+        values = {2, 4, 6, 8}
     return check_values(board, values, row, col)
 
 
@@ -91,23 +93,33 @@ def solve_with_MRV(board, empty_cells, domain):
     return False
 
 
-def sudoku_solver(board, solver):
+def check_even_numbers(board, num_evens):
+    count = 0
+    for row in board:
+        for num in row:
+            if num != 0 and num % 2 == 0:
+                count += 1
+    if count >= num_evens:
+        return True
+    else:
+        return False
+
+
+def sudoku_solver(board, solver, even_cells):
     # Initialize domain for each empty cell
     empty_cells = get_empty_cells(board)
     domain = {}
     for cell in empty_cells:
-        domain[cell] = get_possible_values(board, cell[0], cell[1])
+        domain[cell] = get_possible_values(board, cell[0], cell[1], even_cells)
 
-    # Solve the board
     solved_board = solver(board, empty_cells, domain)
 
     return solved_board
 
 
 def main():
-    # Custom Sudoku initial state
     board = [
-        [5, 3, 0, 0, 7, 0, 0, 0, 0],
+        [0, 3, 0, 0, 7, 0, 0, 0, 0],
         [6, 0, 0, 1, 9, 5, 0, 0, 0],
         [0, 9, 8, 0, 0, 0, 0, 6, 0],
         [8, 0, 0, 0, 6, 0, 0, 0, 3],
@@ -117,28 +129,35 @@ def main():
         [0, 0, 0, 4, 1, 9, 0, 0, 5],
         [0, 0, 0, 0, 8, 0, 0, 7, 9]
     ]
-
-    # Solve the Sudoku board with MRV
-    start_time = timeit.default_timer()
-    solved_board_with_MRV = sudoku_solver(board, solve_with_MRV)
-    end_time = timeit.default_timer()
-    print("Time taken to solve with MRV: ", end_time - start_time, "seconds")
-    if solved_board_with_MRV:
-        for row in solved_board_with_MRV:
-            print(row)
+    even_cells = {(0,0), (1,1), (2,2)}
+    num_evens = 10
+    if not check_even_numbers(board, num_evens):
+        print(f"Error:Board should have at least {num_evens} even values on the board")
+        return
     else:
-        print("No solution found")
+        # with MRV
+        start_time = timeit.default_timer()
+        solved_board_with_MRV = sudoku_solver(board, solve_with_MRV, even_cells)
+        end_time = timeit.default_timer()
+        print("Time taken to solve with MRV: ", end_time - start_time, "seconds")
+        if solved_board_with_MRV:
+            for row in solved_board_with_MRV:
+                print(row)
+        else:
+            print("No solution found")
 
-    print("\n")
+        print("\n")
 
-    # Solve the Sudoku board without MRV
-    start_time = timeit.default_timer()
-    solved_board_without_MRV = sudoku_solver(board, solve_without_MRV)
-    end_time = timeit.default_timer()
-    print("Time taken to solve without MRV: ", end_time - start_time, "seconds")
-    if solved_board_without_MRV:
-        for row in solved_board_without_MRV:
-            print(row)
+        # without MRV
+        start_time = timeit.default_timer()
+        solved_board_without_MRV = sudoku_solver(board, solve_without_MRV, even_cells)
+        end_time = timeit.default_timer()
+        print("Time taken to solve without MRV: ", end_time - start_time, "seconds")
+        if solved_board_without_MRV:
+            for row in solved_board_without_MRV:
+                print(row)
+        else:
+            print("No solution found")
 
 
 if __name__ == "__main__":

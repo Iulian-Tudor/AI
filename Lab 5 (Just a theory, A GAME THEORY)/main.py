@@ -31,9 +31,23 @@ def choose_number(player, number, game_state, player_choices):
 
 
 def heuristic(game_state):
-    potential_triplets = [(1, 5, 9), (2, 5, 8), (3, 5, 7), (4, 5, 6), (2, 6, 7), (1, 6, 8), (3, 6, 4), (1, 7, 7),
-                          (3, 7, 5), (4, 7, 4)]
-    priority_numbers = [5, 6, 4, 1, 2, 3, 7, 8, 9]
+    potential_triplets = [
+        (1, 5, 9),
+        (1, 6, 8),
+        (2, 4, 9),
+        (2, 5, 8),
+        (2, 6, 7),
+        (3, 4, 8),
+        (3, 5, 7),
+        (4, 2, 9),
+        (4, 3, 8),
+        (5, 1, 9),
+        (5, 2, 8),
+        (5, 3, 7),
+        (6, 1, 8),
+        (6, 2, 7),
+    ]
+    priority_numbers = [5, 6, 4, 2, 1, 3, 7, 8, 9]
     available_numbers = [num for num in priority_numbers if game_state[num - 1] == 0]
     # Prioritize numbers that block player A from forming a winning triplet
     for triplet in potential_triplets:
